@@ -437,6 +437,12 @@ static void onic_clear_rx_queue(struct onic_private *priv, u16 qid)
 	size = QDMA_C2H_CMPL_SIZE * real_count + QDMA_C2H_CMPL_STAT_SIZE;
 	size = ALIGN(size, PAGE_SIZE);
 
+	for (i = 0; i < real_count; ++i) {
+		struct onic_rx_buffer *buf = &q->buffer[i];
+		dma_unmap_page(&priv->pdev->dev, buf->dma_addr,
+					     PAGE_SIZE, DMA_FROM_DEVICE);
+	}
+
 	if (ring->desc)
 		dma_free_coherent(&priv->pdev->dev, size, ring->desc,
 				  ring->dma_addr);
@@ -532,6 +538,7 @@ static int onic_init_rx_queue(struct onic_private *priv, u16 qid)
 		desc.dst_addr = dma_map_page(&priv->pdev->dev, pg, 0, PAGE_SIZE,
 					     DMA_FROM_DEVICE);
 		desc.dst_addr += offset;
+		q->buffer[i].dma_addr = desc.dst_addr;
 
 		qdma_pack_c2h_st_desc(desc_ptr, &desc);
 	}

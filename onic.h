@@ -42,6 +42,7 @@ struct onic_rx_buffer {
 	struct page *pg;
 	unsigned int offset;
 	u64 time_stamp;
+	dma_addr_t dma_addr;
 };
 
 /**
